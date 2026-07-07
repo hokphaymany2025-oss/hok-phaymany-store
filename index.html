@@ -295,6 +295,9 @@
   // Replace with your own Telegram username (without the @)
   const OWNER_TELEGRAM_USERNAME = 'hpmany';
 
+  // Google Apps Script Web App URL — centralized order storage
+  const ORDERS_API_URL = 'https://script.google.com/macros/s/AKfycbzzlVZic7VBAkEFo2nj_HbI1EBV7geKrRqJb8fsbrmpkyGSFpPML6XwpAv_pyZJy9KG/exec';
+
   let cart = JSON.parse(localStorage.getItem('shop_cart') || '{}');
   let activeFilter = 'All';
 
@@ -410,6 +413,15 @@
     });
     const orderTotal = cartTotal();
     saveOrders(orders);
+
+    // Send to centralized Google Sheet backend so all customers' orders land in one place
+    const newOrder = orders[orders.length - 1];
+    fetch(ORDERS_API_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'create', order: newOrder }),
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+    }).catch(err => console.error('Could not sync order to sheet:', err));
+
     cart = {};
     saveCart();
     document.getElementById('checkoutForm').reset();
@@ -422,13 +434,30 @@
     document.getElementById('confirmOverlay').classList.add('open');
   }
 
-  function openOwnerView() {
-    renderOwnerOrders();
+  let lastRenderedOrders = [];
+
+  async function openOwnerView() {
     document.getElementById('ownerOverlay').classList.add('open');
+    document.getElementById('ownerOrderList').innerHTML = '<div class="empty-state">Loading orders...</div>';
+    document.getElementById('ownerSummary').innerHTML = '';
+
+    let orders = null;
+    try {
+      const res = await fetch(ORDERS_API_URL);
+      orders = await res.json();
+    } catch (err) {
+      console.error('Could not load orders from sheet, showing local orders only:', err);
+    }
+
+    const usingFallback = orders === null;
+    if (usingFallback) orders = getOrders();
+
+    lastRenderedOrders = orders;
+    renderOwnerOrders(orders, usingFallback);
   }
 
-  function renderOwnerOrders() {
-    const orders = getOrders().slice().reverse();
+  function renderOwnerOrders(orders, usingFallback) {
+    orders = orders.slice().reverse();
 
     const totalOrders = orders.length;
     const totalRevenue = orders.reduce((sum, o) => sum + o.total, 0);
@@ -441,6 +470,7 @@
       <div><div style="font-size:11px; opacity:0.7;">TOTAL REVENUE</div><div class="mono" style="font-size:18px; font-weight:600;">$${totalRevenue.toFixed(2)}</div></div>
       <div><div style="font-size:11px; opacity:0.7;">PENDING</div><div class="mono" style="font-size:18px; font-weight:600; color:var(--rust);">${pendingCount}</div></div>
       <div><div style="font-size:11px; opacity:0.7;">FULFILLED</div><div class="mono" style="font-size:18px; font-weight:600; color:var(--moss);">${fulfilledCount}</div></div>
+      ${usingFallback ? '<div style="width:100%; font-size:12px; color:var(--rust); margin-top:6px;">Could not reach the shared order sheet — showing local orders on this device only.</div>' : ''}
     `;
 
     const el = document.getElementById('ownerOrderList');
@@ -467,12 +497,26 @@
     `).join('');
   }
 
-  function toggleStatus(id) {
-    const orders = getOrders();
-    const o = orders.find(x => x.id === id);
-    if (o) o.status = o.status === 'done' ? 'new' : 'done';
-    saveOrders(orders);
-    renderOwnerOrders();
+  async function toggleStatus(id) {
+    const order = lastRenderedOrders.find(x => x.id === id);
+    const newStatus = order && order.status === 'done' ? 'new' : 'done';
+
+    // Update local cache too, in case sheet is unreachable
+    const localOrders = getOrders();
+    const localOrder = localOrders.find(x => x.id === id);
+    if (localOrder) { localOrder.status = newStatus; saveOrders(localOrders); }
+
+    try {
+      await fetch(ORDERS_API_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'update_status', id, status: newStatus }),
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+      });
+    } catch (err) {
+      console.error('Could not sync status to sheet:', err);
+    }
+
+    openOwnerView();
   }
 
   renderFilters();
