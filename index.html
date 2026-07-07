@@ -250,11 +250,12 @@
       <h2>Order placed</h2>
       <button class="close-x" onclick="closeOverlay('confirmOverlay')">&times;</button>
     </div>
-    <p>Thanks! Your order has been received. We'll contact you to confirm delivery.</p>
+    <p>Thanks! Your order has been saved. To make sure we see it, please send us your order number on Telegram.</p>
     <div class="stub">
       <div style="font-size:12px; opacity:0.7;">ORDER NUMBER</div>
       <div class="order-id mono" id="confirmOrderId"></div>
     </div>
+    <a id="confirmTgLink" href="#" style="display:block; text-align:center; margin-top:16px; background:var(--ink); color:var(--paper); padding:12px; border-radius:4px; text-decoration:none; font-weight:500;">Send order number on Telegram</a>
   </div>
 </div>
 
@@ -289,6 +290,9 @@
     { id: 'p14', name: 'Leveling Guide Bundle', price: 6.0,  category: 'MMO Tools', desc: 'PDF guides for fast character leveling.', icon: '📘', color: '#C1442D' },
     { id: 'p15', name: 'Emulator Optimization Pack', price: 9.0, category: 'MMO Tools', desc: 'Configs for smoother emulator performance.', icon: '📦', color: '#3F5B45' },
   ];
+
+  // Replace with your own Telegram username (without the @)
+  const OWNER_TELEGRAM_USERNAME = 'your_telegram_username';
 
   let cart = JSON.parse(localStorage.getItem('shop_cart') || '{}');
   let activeFilter = 'All';
@@ -403,12 +407,17 @@
       total: cartTotal(),
       status: 'new',
     });
+    const orderTotal = cartTotal();
     saveOrders(orders);
     cart = {};
     saveCart();
     document.getElementById('checkoutForm').reset();
     closeOverlay('checkoutOverlay');
     document.getElementById('confirmOrderId').textContent = orderId;
+    const itemsSummary = items.map(i => `${i.qty}x ${i.name}`).join(', ');
+    const prefilled = `Order ${orderId}: ${itemsSummary} - Total $${orderTotal.toFixed(2)}`;
+    document.getElementById('confirmTgLink').href =
+      `https://t.me/${OWNER_TELEGRAM_USERNAME}?text=${encodeURIComponent(prefilled)}`;
     document.getElementById('confirmOverlay').classList.add('open');
   }
 
