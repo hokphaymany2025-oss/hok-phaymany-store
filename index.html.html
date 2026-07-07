@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stall &mdash; Product Catalog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1B1B1E;
+    --paper: #F1E9D8;
+    --paper-dim: #E4D9C0;
+    --rust: #C1442D;
+    --moss: #3F5B45;
+    --gold: #C79A46;
+    --line: rgba(27,27,30,0.18);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.5;
+  }
+
+  h1, h2, h3 { font-family: 'Fraunces', serif; font-weight: 600; margin: 0; }
+  .mono { font-family: 'IBM Plex Mono', monospace; }
+
+  header.site {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 32px;
+    border-bottom: 2px solid var(--ink);
+  }
+  header.site .brand { display: flex; flex-direction: column; }
+  header.site .brand h1 { font-size: 28px; letter-spacing: -0.5px; }
+  header.site .brand span { font-size: 13px; color: var(--ink); opacity: 0.7; font-style: italic; font-family: 'Fraunces', serif; }
+
+  .cart-btn {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--ink); color: var(--paper);
+    border: none; border-radius: 999px;
+    padding: 10px 18px; font-size: 14px; font-weight: 500;
+    cursor: pointer; font-family: 'Inter', sans-serif;
+  }
+  .cart-btn:hover { background: var(--rust); }
+  .cart-count {
+    background: var(--paper); color: var(--ink);
+    border-radius: 50%; width: 20px; height: 20px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600;
+  }
+
+  main { max-width: 1080px; margin: 0 auto; padding: 40px 32px 80px; }
+
+  .filter-row {
+    display: flex; gap: 10px; margin-bottom: 32px; flex-wrap: wrap;
+  }
+  .filter-chip {
+    border: 1.5px solid var(--ink); background: transparent;
+    padding: 6px 16px; border-radius: 999px; font-size: 13px;
+    cursor: pointer; font-family: 'Inter'; color: var(--ink);
+  }
+  .filter-chip.active { background: var(--ink); color: var(--paper); }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 28px;
+  }
+
+  .card {
+    background: var(--paper-dim);
+    border: 1.5px solid var(--ink);
+    border-radius: 6px;
+    padding: 18px;
+    position: relative;
+    transform: rotate(var(--tilt, 0deg));
+    transition: transform 0.15s ease;
+  }
+  .card:nth-child(3n+1) { --tilt: -0.6deg; }
+  .card:nth-child(3n+2) { --tilt: 0.4deg; }
+  .card:nth-child(3n)   { --tilt: -0.2deg; }
+  .card:hover { transform: rotate(0deg) translateY(-3px); }
+
+  .card .thumb {
+    width: 100%; height: 130px; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 40px; margin-bottom: 14px;
+    color: var(--paper);
+  }
+
+  .card h3 { font-size: 17px; margin-bottom: 4px; }
+  .card p.desc { font-size: 13px; color: var(--ink); opacity: 0.75; margin: 0 0 14px; min-height: 34px; }
+
+  .tag-row { display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--line); padding-top: 12px; }
+  .price { font-size: 18px; font-weight: 500; }
+  .price::before { content: "$"; font-size: 13px; opacity: 0.7; margin-right: 1px; }
+
+  .add-btn {
+    background: var(--ink); color: var(--paper); border: none;
+    border-radius: 4px; padding: 8px 14px; font-size: 13px;
+    cursor: pointer; font-family: 'Inter'; font-weight: 500;
+  }
+  .add-btn:hover { background: var(--rust); }
+
+  .overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(27,27,30,0.5); z-index: 50;
+    align-items: center; justify-content: flex-end;
+  }
+  .overlay.open { display: flex; }
+  .overlay.centered { justify-content: center; }
+
+  .drawer {
+    background: var(--paper); width: 100%; max-width: 400px; height: 100%;
+    padding: 28px; overflow-y: auto; border-left: 2px solid var(--ink);
+  }
+  .modal {
+    background: var(--paper); width: 100%; max-width: 440px;
+    padding: 32px; border-radius: 8px; border: 2px solid var(--ink);
+    max-height: 88vh; overflow-y: auto;
+  }
+
+  .drawer-head, .modal-head {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+  }
+  .close-x {
+    background: none; border: none; font-size: 22px; cursor: pointer; color: var(--ink); line-height: 1;
+  }
+
+  .cart-line {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 0; border-bottom: 1px dashed var(--line);
+  }
+  .cart-line .name { font-size: 14px; font-weight: 500; }
+  .cart-line .qty-ctrl { display: flex; align-items: center; gap: 8px; }
+  .qty-ctrl button {
+    width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--ink);
+    background: transparent; cursor: pointer; font-size: 13px; line-height: 1;
+  }
+
+  .cart-total {
+    display: flex; justify-content: space-between; padding: 18px 0;
+    font-size: 17px; font-weight: 600; border-top: 2px solid var(--ink); margin-top: 8px;
+  }
+
+  .full-btn {
+    width: 100%; padding: 13px; background: var(--rust); color: var(--paper);
+    border: none; border-radius: 4px; font-size: 15px; font-weight: 500;
+    cursor: pointer; font-family: 'Inter'; margin-top: 10px;
+  }
+  .full-btn:hover { background: #a5381f; }
+  .full-btn:disabled { background: var(--line); cursor: not-allowed; }
+
+  label.field { display: block; font-size: 13px; font-weight: 500; margin: 14px 0 5px; }
+  input.field, textarea.field {
+    width: 100%; padding: 10px; border: 1.5px solid var(--ink); border-radius: 4px;
+    font-family: 'Inter'; font-size: 14px; background: white;
+  }
+  textarea.field { resize: vertical; min-height: 60px; }
+
+  .empty-state { text-align: center; padding: 40px 0; opacity: 0.7; font-family: 'Fraunces', serif; font-style: italic; }
+
+  .confirm-box .stub {
+    border: 2px dashed var(--rust); border-radius: 6px; padding: 16px;
+    text-align: center; margin-top: 16px;
+  }
+  .confirm-box .order-id { font-size: 20px; font-weight: 600; letter-spacing: 1px; margin: 6px 0; }
+
+  footer.owner-link {
+    text-align: center; padding: 24px; font-size: 12px; opacity: 0.55;
+  }
+  footer.owner-link a { color: var(--ink); }
+
+  .order-card {
+    border: 1.5px solid var(--ink); border-radius: 6px; padding: 16px; margin-bottom: 16px; background: var(--paper-dim);
+  }
+  .order-card .oh { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px; }
+  .order-card ul { margin: 8px 0; padding-left: 18px; font-size: 13px; }
+  .status-pill {
+    font-size: 11px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--moss); color: var(--moss);
+    background: none; cursor: pointer; font-family: 'Inter';
+  }
+  .status-pill.done { background: var(--moss); color: var(--paper); }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="brand">
+    <h1 id="shopName">Stall</h1>
+    <span>fresh goods, made to order</span>
+  </div>
+  <button class="cart-btn" onclick="openCart()">
+    Cart <span class="cart-count" id="cartCount">0</span>
+  </button>
+</header>
+
+<main>
+  <div class="filter-row" id="filterRow"></div>
+  <div class="grid" id="productGrid"></div>
+</main>
+
+<footer class="owner-link">
+  <a href="#" onclick="openOwnerView(); return false;">Shop owner? View orders</a>
+</footer>
+
+<div class="overlay" id="cartOverlay">
+  <div class="drawer">
+    <div class="drawer-head">
+      <h2>Your cart</h2>
+      <button class="close-x" onclick="closeOverlay('cartOverlay')">&times;</button>
+    </div>
+    <div id="cartLines"></div>
+    <div class="cart-total"><span>Total</span><span class="mono" id="cartTotal">$0.00</span></div>
+    <button class="full-btn" id="checkoutBtn" onclick="openCheckout()">Go to checkout</button>
+  </div>
+</div>
+
+<div class="overlay centered" id="checkoutOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>Checkout</h2>
+      <button class="close-x" onclick="closeOverlay('checkoutOverlay')">&times;</button>
+    </div>
+    <form id="checkoutForm" onsubmit="submitOrder(event)">
+      <label class="field">Full name</label>
+      <input class="field" required id="custName" placeholder="Your name">
+      <label class="field">Phone number</label>
+      <input class="field" required id="custPhone" placeholder="+855 xx xxx xxx">
+      <label class="field">Delivery address</label>
+      <textarea class="field" required id="custAddress" placeholder="Street, city"></textarea>
+      <label class="field">Order notes (optional)</label>
+      <textarea class="field" id="custNotes" placeholder="Any special requests"></textarea>
+      <button type="submit" class="full-btn">Place order</button>
+    </form>
+  </div>
+</div>
+
+<div class="overlay centered" id="confirmOverlay">
+  <div class="modal confirm-box">
+    <div class="modal-head">
+      <h2>Order placed</h2>
+      <button class="close-x" onclick="closeOverlay('confirmOverlay')">&times;</button>
+    </div>
+    <p>Thanks! Your order has been received. We'll contact you to confirm delivery.</p>
+    <div class="stub">
+      <div style="font-size:12px; opacity:0.7;">ORDER NUMBER</div>
+      <div class="order-id mono" id="confirmOrderId"></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay centered" id="ownerOverlay">
+  <div class="modal" style="max-width: 560px;">
+    <div class="modal-head">
+      <h2>Orders</h2>
+      <button class="close-x" onclick="closeOverlay('ownerOverlay')">&times;</button>
+    </div>
+    <div id="ownerOrderList"></div>
+  </div>
+</div>
+
+<script>
+  // ---------------------------------------------------------------------
+  // PRODUCT DATA — replace with your own products, prices, and emoji/icon
+  // ---------------------------------------------------------------------
+  const PRODUCTS = [
+    { id: 'p1', name: 'Wireless Earbuds', price: 18.0, category: 'Electronics', desc: 'Bluetooth 5.3, 20hr battery case.', icon: '🎧', color: '#1B1B1E' },
+    { id: 'p2', name: 'Fast Charger 30W', price: 9.5,  category: 'Electronics', desc: 'USB-C, supports quick charge.', icon: '🔌', color: '#3F5B45' },
+    { id: 'p3', name: 'Power Bank 10000mAh', price: 14.0, category: 'Electronics', desc: 'Dual output, slim design.', icon: '🔋', color: '#C1442D' },
+    { id: 'p4', name: 'Bluetooth Speaker', price: 22.0, category: 'Electronics', desc: 'Portable, waterproof, 10W.', icon: '🔊', color: '#C79A46' },
+    { id: 'p5', name: 'Phone Holder Stand', price: 5.0,  category: 'Electronics', desc: 'Adjustable, foldable desk stand.', icon: '📱', color: '#1B1B1E' },
+    { id: 'p6', name: 'USB-C Cable 1m', price: 3.5,  category: 'Electronics', desc: 'Braided, fast data + charge.', icon: '🔗', color: '#3F5B45' },
+    { id: 'p7', name: 'Anti-Hairfall Shampoo', price: 4.5,  category: 'Shampoo', desc: '400ml, strengthens roots.', icon: '🧴', color: '#C79A46' },
+    { id: 'p8', name: 'Herbal Shampoo', price: 3.8,  category: 'Shampoo', desc: 'Natural extracts, 350ml.', icon: '🧴', color: '#3F5B45' },
+    { id: 'p9', name: 'Anti-Dandruff Shampoo', price: 4.2,  category: 'Shampoo', desc: 'Clinically tested, 400ml.', icon: '🧴', color: '#1B1B1E' },
+    { id: 'p10', name: 'Shampoo & Conditioner Set', price: 7.5, category: 'Shampoo', desc: 'Matching pair, 2x350ml.', icon: '🧴', color: '#C1442D' },
+    { id: 'p11', name: 'Auto Farming Script', price: 15.0, category: 'MMO Tools', desc: 'Automates repetitive in-game farming.', icon: '⚙️', color: '#1B1B1E' },
+    { id: 'p12', name: 'Multi-Account Manager', price: 20.0, category: 'MMO Tools', desc: 'Run and switch between game accounts.', icon: '🖥️', color: '#3F5B45' },
+    { id: 'p13', name: 'Game Bot License (1mo)', price: 12.0, category: 'MMO Tools', desc: 'Monthly key for automation bot.', icon: '🔑', color: '#C79A46' },
+    { id: 'p14', name: 'Leveling Guide Bundle', price: 6.0,  category: 'MMO Tools', desc: 'PDF guides for fast character leveling.', icon: '📘', color: '#C1442D' },
+    { id: 'p15', name: 'Emulator Optimization Pack', price: 9.0, category: 'MMO Tools', desc: 'Configs for smoother emulator performance.', icon: '📦', color: '#3F5B45' },
+  ];
+
+  let cart = JSON.parse(localStorage.getItem('shop_cart') || '{}');
+  let activeFilter = 'All';
+
+  function saveCart() { localStorage.setItem('shop_cart', JSON.stringify(cart)); renderCartCount(); }
+
+  function getOrders() { return JSON.parse(localStorage.getItem('shop_orders') || '[]'); }
+  function saveOrders(orders) { localStorage.setItem('shop_orders', JSON.stringify(orders)); }
+
+  function renderFilters() {
+    const cats = ['All', ...new Set(PRODUCTS.map(p => p.category))];
+    const row = document.getElementById('filterRow');
+    row.innerHTML = cats.map(c =>
+      `<button class="filter-chip ${c === activeFilter ? 'active' : ''}" onclick="setFilter('${c}')">${c}</button>`
+    ).join('');
+  }
+
+  function setFilter(cat) { activeFilter = cat; renderFilters(); renderGrid(); }
+
+  function renderGrid() {
+    const grid = document.getElementById('productGrid');
+    const items = activeFilter === 'All' ? PRODUCTS : PRODUCTS.filter(p => p.category === activeFilter);
+    grid.innerHTML = items.map(p => `
+      <div class="card">
+        <div class="thumb" style="background:${p.color}">${p.icon}</div>
+        <h3>${p.name}</h3>
+        <p class="desc">${p.desc}</p>
+        <div class="tag-row">
+          <span class="price mono">${p.price.toFixed(2)}</span>
+          <button class="add-btn" onclick="addToCart('${p.id}')">Add to cart</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function addToCart(id) {
+    cart[id] = (cart[id] || 0) + 1;
+    saveCart();
+  }
+
+  function changeQty(id, delta) {
+    cart[id] = (cart[id] || 0) + delta;
+    if (cart[id] <= 0) delete cart[id];
+    saveCart();
+    renderCartLines();
+  }
+
+  function cartItemCount() { return Object.values(cart).reduce((a, b) => a + b, 0); }
+  function cartTotal() {
+    return Object.entries(cart).reduce((sum, [id, qty]) => {
+      const p = PRODUCTS.find(x => x.id === id);
+      return sum + (p ? p.price * qty : 0);
+    }, 0);
+  }
+
+  function renderCartCount() { document.getElementById('cartCount').textContent = cartItemCount(); }
+
+  function renderCartLines() {
+    const el = document.getElementById('cartLines');
+    const entries = Object.entries(cart);
+    if (entries.length === 0) {
+      el.innerHTML = '<div class="empty-state">Your cart is empty</div>';
+      document.getElementById('checkoutBtn').disabled = true;
+    } else {
+      el.innerHTML = entries.map(([id, qty]) => {
+        const p = PRODUCTS.find(x => x.id === id);
+        if (!p) return '';
+        return `
+          <div class="cart-line">
+            <div>
+              <div class="name">${p.name}</div>
+              <div class="mono" style="font-size:12px; opacity:0.7;">$${p.price.toFixed(2)} each</div>
+            </div>
+            <div class="qty-ctrl">
+              <button onclick="changeQty('${id}', -1)">-</button>
+              <span class="mono">${qty}</span>
+              <button onclick="changeQty('${id}', 1)">+</button>
+            </div>
+          </div>`;
+      }).join('');
+      document.getElementById('checkoutBtn').disabled = false;
+    }
+    document.getElementById('cartTotal').textContent = '$' + cartTotal().toFixed(2);
+  }
+
+  function openCart() { renderCartLines(); document.getElementById('cartOverlay').classList.add('open'); }
+  function openCheckout() {
+    if (cartItemCount() === 0) return;
+    closeOverlay('cartOverlay');
+    document.getElementById('checkoutOverlay').classList.add('open');
+  }
+  function closeOverlay(id) { document.getElementById(id).classList.remove('open'); }
+
+  function submitOrder(e) {
+    e.preventDefault();
+    const orders = getOrders();
+    const orderId = 'ORD-' + Date.now().toString().slice(-6);
+    const items = Object.entries(cart).map(([id, qty]) => {
+      const p = PRODUCTS.find(x => x.id === id);
+      return { name: p.name, qty, price: p.price };
+    });
+    orders.push({
+      id: orderId,
+      date: new Date().toISOString(),
+      customer: {
+        name: document.getElementById('custName').value,
+        phone: document.getElementById('custPhone').value,
+        address: document.getElementById('custAddress').value,
+        notes: document.getElementById('custNotes').value,
+      },
+      items,
+      total: cartTotal(),
+      status: 'new',
+    });
+    saveOrders(orders);
+    cart = {};
+    saveCart();
+    document.getElementById('checkoutForm').reset();
+    closeOverlay('checkoutOverlay');
+    document.getElementById('confirmOrderId').textContent = orderId;
+    document.getElementById('confirmOverlay').classList.add('open');
+  }
+
+  function openOwnerView() {
+    renderOwnerOrders();
+    document.getElementById('ownerOverlay').classList.add('open');
+  }
+
+  function renderOwnerOrders() {
+    const orders = getOrders().slice().reverse();
+    const el = document.getElementById('ownerOrderList');
+    if (orders.length === 0) {
+      el.innerHTML = '<div class="empty-state">No orders yet</div>';
+      return;
+    }
+    el.innerHTML = orders.map(o => `
+      <div class="order-card">
+        <div class="oh">
+          <span class="mono">${o.id}</span>
+          <span>${new Date(o.date).toLocaleString()}</span>
+        </div>
+        <div><strong>${o.customer.name}</strong> &middot; ${o.customer.phone}</div>
+        <div style="font-size:13px; opacity:0.8;">${o.customer.address}</div>
+        ${o.customer.notes ? `<div style="font-size:13px; font-style:italic; opacity:0.75;">Note: ${o.customer.notes}</div>` : ''}
+        <ul>${o.items.map(i => `<li>${i.qty} &times; ${i.name} &mdash; $${(i.price * i.qty).toFixed(2)}</li>`).join('')}</ul>
+        <div class="oh"><span class="mono">Total: $${o.total.toFixed(2)}</span>
+          <button class="status-pill ${o.status === 'done' ? 'done' : ''}" onclick="toggleStatus('${o.id}')">
+            ${o.status === 'done' ? 'Fulfilled' : 'Mark fulfilled'}
+          </button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function toggleStatus(id) {
+    const orders = getOrders();
+    const o = orders.find(x => x.id === id);
+    if (o) o.status = o.status === 'done' ? 'new' : 'done';
+    saveOrders(orders);
+    renderOwnerOrders();
+  }
+
+  renderFilters();
+  renderGrid();
+  renderCartCount();
+</script>
+
+</body>
+</html>
