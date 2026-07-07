@@ -436,21 +436,40 @@
 
   let lastRenderedOrders = [];
 
+  let ownerPasscode = null;
+
   async function openOwnerView() {
+    const passcode = prompt('Enter shop owner passcode:');
+    if (!passcode) return; // cancelled
+
     document.getElementById('ownerOverlay').classList.add('open');
     document.getElementById('ownerOrderList').innerHTML = '<div class="empty-state">Loading orders...</div>';
     document.getElementById('ownerSummary').innerHTML = '';
 
     let orders = null;
+    let unauthorized = false;
     try {
-      const res = await fetch(ORDERS_API_URL);
-      orders = await res.json();
+      const res = await fetch(`${ORDERS_API_URL}?key=${encodeURIComponent(passcode)}`);
+      const data = await res.json();
+      if (data && data.error === 'unauthorized') {
+        unauthorized = true;
+      } else {
+        orders = data;
+      }
     } catch (err) {
-      console.error('Could not load orders from sheet, showing local orders only:', err);
+      console.error('Could not load orders from sheet:', err);
     }
 
+    if (unauthorized) {
+      closeOverlay('ownerOverlay');
+      ownerPasscode = null;
+      alert('Incorrect passcode. Orders are not shown.');
+      return;
+    }
+    ownerPasscode = passcode;
+
     const usingFallback = orders === null;
-    if (usingFallback) orders = getOrders();
+    if (usingFallback) orders = [];
 
     lastRenderedOrders = orders;
     renderOwnerOrders(orders, usingFallback);
@@ -470,7 +489,7 @@
       <div><div style="font-size:11px; opacity:0.7;">TOTAL REVENUE</div><div class="mono" style="font-size:18px; font-weight:600;">$${totalRevenue.toFixed(2)}</div></div>
       <div><div style="font-size:11px; opacity:0.7;">PENDING</div><div class="mono" style="font-size:18px; font-weight:600; color:var(--rust);">${pendingCount}</div></div>
       <div><div style="font-size:11px; opacity:0.7;">FULFILLED</div><div class="mono" style="font-size:18px; font-weight:600; color:var(--moss);">${fulfilledCount}</div></div>
-      ${usingFallback ? '<div style="width:100%; font-size:12px; color:var(--rust); margin-top:6px;">Could not reach the shared order sheet — showing local orders on this device only.</div>' : ''}
+      ${usingFallback ? '<div style="width:100%; font-size:12px; color:var(--rust); margin-top:6px;">Could not reach the shared order sheet. Try again in a moment.</div>' : ''}
     `;
 
     const el = document.getElementById('ownerOrderList');
@@ -509,14 +528,28 @@
     try {
       await fetch(ORDERS_API_URL, {
         method: 'POST',
-        body: JSON.stringify({ action: 'update_status', id, status: newStatus }),
+        body: JSON.stringify({ action: 'update_status', id, status: newStatus, key: ownerPasscode }),
         headers: { 'Content-Type': 'text/plain;charset=utf-8' }
       });
     } catch (err) {
       console.error('Could not sync status to sheet:', err);
     }
 
-    openOwnerView();
+    openOwnerView2();
+  }
+
+  // Refresh the owner order list without re-prompting for the passcode
+  async function openOwnerView2() {
+    if (!ownerPasscode) return openOwnerView();
+    document.getElementById('ownerOrderList').innerHTML = '<div class="empty-state">Loading orders...</div>';
+    try {
+      const res = await fetch(`${ORDERS_API_URL}?key=${encodeURIComponent(ownerPasscode)}`);
+      const orders = await res.json();
+      lastRenderedOrders = orders;
+      renderOwnerOrders(orders, false);
+    } catch (err) {
+      console.error('Could not refresh orders:', err);
+    }
   }
 
   renderFilters();
