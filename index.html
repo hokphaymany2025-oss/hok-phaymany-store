@@ -364,7 +364,15 @@
     renderFilters();
     renderGrid();
   }
+// Each category gets a consistent color, cycling through this palette
+  const CATEGORY_PALETTE = ['#C1442D', '#3F5B45', '#C79A46', '#5B4B8A', '#2E6E8E', '#8A4B6B', '#6B7A2E'];
 
+  function colorForCategory(cat) {
+    if (cat === 'All') return null; // 'All' keeps the default ink/paper styling
+    const cats = [...new Set(PRODUCTS.map(p => p.category))];
+    const idx = cats.indexOf(cat);
+    return CATEGORY_PALETTE[idx % CATEGORY_PALETTE.length];
+  }
   function renderFilters() {
     const cats = ['All', ...new Set(PRODUCTS.map(p => p.category))];
     const row = document.getElementById('filterRow');
