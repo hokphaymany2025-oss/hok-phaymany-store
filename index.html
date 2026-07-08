@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hok Phaymany Store &mdash; Product Catalog</title>
+<title>Stall &mdash; Product Catalog</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
@@ -203,8 +203,8 @@
 
 <header class="site">
   <div class="brand">
-    <h1 id="shopName">Hok Phaymany Store</h1>
-    <span>High quality goods, good service, made to order</span>
+    <h1 id="shopName">Stall</h1>
+    <span>fresh goods, made to order</span>
   </div>
   <button class="cart-btn" onclick="openCart()">
     Cart <span class="cart-count" id="cartCount">0</span>
@@ -218,6 +218,8 @@
 
 <footer class="owner-link">
   <a href="#" onclick="openOwnerView(); return false;">Shop owner? View orders</a>
+  &nbsp;&middot;&nbsp;
+  <a href="#" onclick="openProductsAdmin(); return false;">Manage products</a>
 </footer>
 
 <div class="overlay" id="cartOverlay">
@@ -278,30 +280,46 @@
   </div>
 </div>
 
+<div class="overlay centered" id="productsAdminOverlay">
+  <div class="modal" style="max-width: 560px;">
+    <div class="modal-head">
+      <h2>Manage Products</h2>
+      <button class="close-x" onclick="closeOverlay('productsAdminOverlay')">&times;</button>
+    </div>
+
+    <form id="productForm" onsubmit="submitProductForm(event)">
+      <input type="hidden" id="prodEditId" value="">
+      <label class="field">Product name</label>
+      <input class="field" required id="prodName" placeholder="e.g. Wireless Earbuds">
+      <label class="field">Price (USD)</label>
+      <input class="field" required id="prodPrice" type="number" step="0.01" min="0" placeholder="e.g. 12.50">
+      <label class="field">Category</label>
+      <input class="field" required id="prodCategory" placeholder="e.g. Electronics">
+      <label class="field">Description</label>
+      <textarea class="field" id="prodDesc" placeholder="Short description"></textarea>
+      <label class="field">Icon (emoji)</label>
+      <input class="field" id="prodIcon" placeholder="e.g. 🎧" maxlength="4">
+      <label class="field">Thumbnail color (hex)</label>
+      <input class="field" id="prodColor" placeholder="e.g. #1B1B1E" value="#1B1B1E">
+      <button type="submit" class="full-btn" id="prodSubmitBtn">Add product</button>
+      <button type="button" class="full-btn" id="prodCancelBtn" style="display:none; background:var(--line); color:var(--ink); margin-top:8px;" onclick="resetProductForm()">Cancel edit</button>
+    </form>
+
+    <hr style="border:none; border-top:1.5px solid var(--ink); margin:24px 0;">
+
+    <div id="productsAdminList"></div>
+  </div>
+</div>
+
 <script>
   // ---------------------------------------------------------------------
   // PRODUCT DATA — replace with your own products, prices, and emoji/icon
   // ---------------------------------------------------------------------
-  const PRODUCTS = [
-    { id: 'p1', name: 'Wireless Earbuds', price: 18.0, category: 'Electronics', desc: 'Bluetooth 5.3, 20hr battery case.', icon: '🎧', color: '#1B1B1E' },
-    { id: 'p2', name: 'Fast Charger 30W', price: 9.5,  category: 'Electronics', desc: 'USB-C, supports quick charge.', icon: '🔌', color: '#3F5B45' },
-    { id: 'p3', name: 'Power Bank 10000mAh', price: 14.0, category: 'Electronics', desc: 'Dual output, slim design.', icon: '🔋', color: '#C1442D' },
-    { id: 'p4', name: 'Bluetooth Speaker', price: 22.0, category: 'Electronics', desc: 'Portable, waterproof, 10W.', icon: '🔊', color: '#C79A46' },
-    { id: 'p5', name: 'Phone Holder Stand', price: 5.0,  category: 'Electronics', desc: 'Adjustable, foldable desk stand.', icon: '📱', color: '#1B1B1E' },
-    { id: 'p6', name: 'USB-C Cable 1m', price: 3.5,  category: 'Electronics', desc: 'Braided, fast data + charge.', icon: '🔗', color: '#3F5B45' },
-    { id: 'p7', name: 'Anti-Hairfall Shampoo', price: 4.5,  category: 'Shampoo', desc: '400ml, strengthens roots.', icon: '🧴', color: '#C79A46' },
-    { id: 'p8', name: 'Herbal Shampoo', price: 3.8,  category: 'Shampoo', desc: 'Natural extracts, 350ml.', icon: '🧴', color: '#3F5B45' },
-    { id: 'p9', name: 'Anti-Dandruff Shampoo', price: 4.2,  category: 'Shampoo', desc: 'Clinically tested, 400ml.', icon: '🧴', color: '#1B1B1E' },
-    { id: 'p10', name: 'Shampoo & Conditioner Set', price: 7.5, category: 'Shampoo', desc: 'Matching pair, 2x350ml.', icon: '🧴', color: '#C1442D' },
-    { id: 'p11', name: 'Auto Farming Script', price: 15.0, category: 'MMO Tools', desc: 'Automates repetitive in-game farming.', icon: '⚙️', color: '#1B1B1E' },
-    { id: 'p12', name: 'Multi-Account Manager', price: 20.0, category: 'MMO Tools', desc: 'Run and switch between game accounts.', icon: '🖥️', color: '#3F5B45' },
-    { id: 'p13', name: 'Game Bot License (1mo)', price: 12.0, category: 'MMO Tools', desc: 'Monthly key for automation bot.', icon: '🔑', color: '#C79A46' },
-    { id: 'p14', name: 'Leveling Guide Bundle', price: 6.0,  category: 'MMO Tools', desc: 'PDF guides for fast character leveling.', icon: '📘', color: '#C1442D' },
-    { id: 'p15', name: 'Emulator Optimization Pack', price: 9.0, category: 'MMO Tools', desc: 'Configs for smoother emulator performance.', icon: '📦', color: '#3F5B45' },
-  ];
+  // Products are now loaded from your Google Sheet (see "Manage products" link below)
+  let PRODUCTS = [];
 
   // Replace with your own Telegram username (without the @)
-  const OWNER_TELEGRAM_USERNAME = 'hpmany';
+  const OWNER_TELEGRAM_USERNAME = 'your_telegram_username';
 
   // Google Apps Script Web App URL — centralized order storage
   const ORDERS_API_URL = 'https://script.google.com/macros/s/AKfycbzzlVZic7VBAkEFo2nj_HbI1EBV7geKrRqJb8fsbrmpkyGSFpPML6XwpAv_pyZJy9KG/exec';
@@ -314,7 +332,19 @@
   function getOrders() { return JSON.parse(localStorage.getItem('shop_orders') || '[]'); }
   function saveOrders(orders) { localStorage.setItem('shop_orders', JSON.stringify(orders)); }
 
-  function renderFilters() {
+  async function loadProducts() {
+    document.getElementById('productGrid').innerHTML = '<div class="empty-state">Loading products...</div>';
+    try {
+      const res = await fetch(`${ORDERS_API_URL}?type=products`);
+      PRODUCTS = await res.json();
+    } catch (err) {
+      console.error('Could not load products:', err);
+      document.getElementById('productGrid').innerHTML = '<div class="empty-state">Could not load products. Please refresh.</div>';
+      return;
+    }
+    renderFilters();
+    renderGrid();
+  }
     const cats = ['All', ...new Set(PRODUCTS.map(p => p.category))];
     const row = document.getElementById('filterRow');
     row.innerHTML = cats.map(c =>
@@ -560,8 +590,130 @@
     }
   }
 
-  renderFilters();
-  renderGrid();
+  // ---------------------------------------------------------------------
+  // Products admin panel
+  // ---------------------------------------------------------------------
+  async function openProductsAdmin() {
+    if (!ownerPasscode) {
+      const passcode = prompt('Enter shop owner passcode:');
+      if (!passcode) return;
+      ownerPasscode = passcode;
+    }
+    document.getElementById('productsAdminOverlay').classList.add('open');
+    resetProductForm();
+    await refreshProductsAdminList();
+  }
+
+  async function refreshProductsAdminList() {
+    const el = document.getElementById('productsAdminList');
+    el.innerHTML = '<div class="empty-state">Loading products...</div>';
+    try {
+      const res = await fetch(`${ORDERS_API_URL}?type=products`);
+      PRODUCTS = await res.json();
+    } catch (err) {
+      el.innerHTML = '<div class="empty-state">Could not load products.</div>';
+      return;
+    }
+    if (PRODUCTS.length === 0) {
+      el.innerHTML = '<div class="empty-state">No products yet — add your first one above.</div>';
+      return;
+    }
+    el.innerHTML = PRODUCTS.map(p => `
+      <div class="order-card">
+        <div class="oh">
+          <span><strong>${p.icon || ''} ${p.name}</strong></span>
+          <span class="mono">$${Number(p.price).toFixed(2)}</span>
+        </div>
+        <div style="font-size:13px; opacity:0.8;">${p.category} &mdash; ${p.desc || ''}</div>
+        <div class="oh" style="margin-top:10px;">
+          <button class="status-pill" onclick='editProduct(${JSON.stringify(p)})'>Edit</button>
+          <button class="status-pill" style="border-color:var(--rust); color:var(--rust);" onclick="deleteProduct('${p.id}')">Delete</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function editProduct(p) {
+    document.getElementById('prodEditId').value = p.id;
+    document.getElementById('prodName').value = p.name;
+    document.getElementById('prodPrice').value = p.price;
+    document.getElementById('prodCategory').value = p.category;
+    document.getElementById('prodDesc').value = p.desc || '';
+    document.getElementById('prodIcon').value = p.icon || '';
+    document.getElementById('prodColor').value = p.color || '#1B1B1E';
+    document.getElementById('prodSubmitBtn').textContent = 'Save changes';
+    document.getElementById('prodCancelBtn').style.display = 'block';
+    document.getElementById('productForm').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function resetProductForm() {
+    document.getElementById('productForm').reset();
+    document.getElementById('prodEditId').value = '';
+    document.getElementById('prodColor').value = '#1B1B1E';
+    document.getElementById('prodSubmitBtn').textContent = 'Add product';
+    document.getElementById('prodCancelBtn').style.display = 'none';
+  }
+
+  async function submitProductForm(e) {
+    e.preventDefault();
+    const editId = document.getElementById('prodEditId').value;
+    const product = {
+      id: editId || undefined,
+      name: document.getElementById('prodName').value,
+      price: parseFloat(document.getElementById('prodPrice').value),
+      category: document.getElementById('prodCategory').value,
+      desc: document.getElementById('prodDesc').value,
+      icon: document.getElementById('prodIcon').value,
+      color: document.getElementById('prodColor').value || '#1B1B1E',
+    };
+
+    try {
+      const res = await fetch(ORDERS_API_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: editId ? 'update_product' : 'add_product',
+          product,
+          key: ownerPasscode
+        }),
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+      });
+      const data = await res.json();
+      if (data && data.error === 'unauthorized') {
+        alert('Incorrect passcode — changes were not saved.');
+        ownerPasscode = null;
+        return;
+      }
+    } catch (err) {
+      alert('Could not save product. Check your connection and try again.');
+      return;
+    }
+
+    resetProductForm();
+    await refreshProductsAdminList();
+  }
+
+  async function deleteProduct(id) {
+    if (!confirm('Delete this product? This cannot be undone.')) return;
+    try {
+      const res = await fetch(ORDERS_API_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'delete_product', id, key: ownerPasscode }),
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+      });
+      const data = await res.json();
+      if (data && data.error === 'unauthorized') {
+        alert('Incorrect passcode — product was not deleted.');
+        ownerPasscode = null;
+        return;
+      }
+    } catch (err) {
+      alert('Could not delete product. Check your connection and try again.');
+      return;
+    }
+    await refreshProductsAdminList();
+  }
+
+  loadProducts();
   renderCartCount();
 </script>
 
