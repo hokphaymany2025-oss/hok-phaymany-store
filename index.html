@@ -217,9 +217,12 @@
 <body>
 
 <header class="site">
-  <div class="brand">
-    <h1 id="shopName">Hok Phaymany Store</h1>
-    <span>High quality products, good service, made to order</span>
+  <div class="brand" style="flex-direction: row; align-items: center; gap: 12px;">
+    <img src="https://hokphaymany2025-oss.github.io/hok-phaymany-store/logo.png" alt="Logo" style="height: 44px; width: 44px; object-fit: cover; border-radius: 8px;" onerror="this.style.display='none';">
+    <div style="display:flex; flex-direction:column;">
+      <h1 id="shopName">Stall</h1>
+      <span>fresh goods, made to order</span>
+    </div>
   </div>
   <button class="cart-btn" onclick="openCart()">
     Cart <span class="cart-count" id="cartCount">0</span>
