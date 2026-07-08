@@ -81,8 +81,8 @@
     display: flex; gap: 10px; margin-bottom: 32px; flex-wrap: wrap;
   }
   .filter-chip {
-    border: 1.5px solid var(--ink); background: transparent;
-    padding: 6px 16px; border-radius: 999px; font-size: 13px;
+    border: 2px solid var(--ink); background: #F21BDC;
+    padding: 6px 16px; border-radius: 999px; font-size: 15px;
     cursor: pointer; font-family: 'Inter'; color: var(--ink);
   }
   .filter-chip.active { background: var(--ink); color: var(--paper); }
@@ -366,7 +366,7 @@
   }
 
   // Each category gets a consistent color, cycling through this palette
-  const CATEGORY_PALETTE = ['#C1442D', '#3F5B45', '#C79A46', '#5B4B8A', '#2E6E8E', '#8A4B6B', '#6B7A2E'];
+  const CATEGORY_PALETTE = ['#34E5FF', '#3F5B45', '#C79A46', '#5B4B8A', '#2E6E8E', '#8A4B6B', '#6B7A2E'];
 
   function colorForCategory(cat) {
     if (cat === 'All') return null; // 'All' keeps the default ink/paper styling
