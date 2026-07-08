@@ -331,7 +331,7 @@
 
   // Google Apps Script Web App URL — centralized order storage
   const ORDERS_API_URL = 'https://script.google.com/macros/s/AKfycbwWgDjeyHWHVHyU__DPfMsyEqAwRurPe1oNEvlq7TVGtcLJved_SrjhwkWcwAtBK84F/exec';
-                          
+
   let cart = JSON.parse(localStorage.getItem('shop_cart') || '{}');
   let activeFilter = 'All';
 
@@ -415,11 +415,19 @@
       el.innerHTML = entries.map(([id, qty]) => {
         const p = PRODUCTS.find(x => x.id === id);
         if (!p) return '';
+        const thumbStyle = 'width:44px;height:44px;border-radius:4px;flex-shrink:0;';
+        const thumb = p.image
+          ? `<img src="${p.image}" alt="" style="${thumbStyle} object-fit:cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+             <div style="${thumbStyle} background:${p.color || '#1B1B1E'}; display:none; align-items:center; justify-content:center; font-size:20px;">${p.icon || ''}</div>`
+          : `<div style="${thumbStyle} background:${p.color || '#1B1B1E'}; display:flex; align-items:center; justify-content:center; font-size:20px;">${p.icon || ''}</div>`;
         return `
           <div class="cart-line">
-            <div>
-              <div class="name">${p.name}</div>
-              <div class="mono" style="font-size:12px; opacity:0.7;">$${p.price.toFixed(2)} each</div>
+            <div style="display:flex; align-items:center; gap:10px;">
+              ${thumb}
+              <div>
+                <div class="name">${p.name}</div>
+                <div class="mono" style="font-size:12px; opacity:0.7;">$${p.price.toFixed(2)} each</div>
+              </div>
             </div>
             <div class="qty-ctrl">
               <button onclick="changeQty('${id}', -1)">-</button>
