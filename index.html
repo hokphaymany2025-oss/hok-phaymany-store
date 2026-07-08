@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hok Phaymany Store &mdash; Product Catalog</title>
+<title>Stall &mdash; Product Catalog</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --ink: #ff006e;
+    --ink: #1B1B1E;
     --paper: #F1E9D8;
     --paper-dim: #E4D9C0;
     --rust: #C1442D;
@@ -20,9 +20,9 @@
 
   * { box-sizing: border-box; }
 
- body {
+  body {
     margin: 0;
-    background: url('https://hokphaymany2025-oss.github.io/hok-phaymany-store/temple-door.jpg') center/cover no-repeat fixed;
+    background: var(--paper);
     color: var(--ink);
     font-family: 'Inter', sans-serif;
     line-height: 1.5;
@@ -61,12 +61,13 @@
     font-size: 11px; font-weight: 600;
   }
 
-   main {
+  main {
     max-width: 1080px;
     margin: 0 auto;
     padding: 40px 32px 80px;
     background: url('https://hokphaymany2025-oss.github.io/hok-phaymany-store/temple-door.jpg') center/cover no-repeat fixed;
   }
+
   .filter-row {
     display: flex; gap: 10px; margin-bottom: 32px; flex-wrap: wrap;
   }
@@ -203,8 +204,8 @@
 
 <header class="site">
   <div class="brand">
-    <h1 id="shopName">Hok Phaymany Store</h1>
-    <span>High quality goods, good applinace services, made to order</span>
+    <h1 id="shopName">Stall</h1>
+    <span>fresh goods, made to order</span>
   </div>
   <button class="cart-btn" onclick="openCart()">
     Cart <span class="cart-count" id="cartCount">0</span>
