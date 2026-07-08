@@ -337,7 +337,9 @@
     document.getElementById('productGrid').innerHTML = '<div class="empty-state">Loading products...</div>';
     try {
       const res = await fetch(`${ORDERS_API_URL}?type=products`);
-      PRODUCTS = await res.json();
+      const raw = await res.json();
+      // Skip any incomplete/malformed rows (e.g. blank test entries) so they never break the shop
+      PRODUCTS = raw.filter(p => p && p.name && p.category && !isNaN(parseFloat(p.price)));
     } catch (err) {
       console.error('Could not load products:', err);
       document.getElementById('productGrid').innerHTML = '<div class="empty-state">Could not load products. Please refresh.</div>';
@@ -362,11 +364,11 @@
     const items = activeFilter === 'All' ? PRODUCTS : PRODUCTS.filter(p => p.category === activeFilter);
     grid.innerHTML = items.map(p => `
       <div class="card">
-        <div class="thumb" style="background:${p.color}">${p.icon}</div>
+        <div class="thumb" style="background:${p.color || '#1B1B1E'}">${p.icon || ''}</div>
         <h3>${p.name}</h3>
-        <p class="desc">${p.desc}</p>
+        <p class="desc">${p.desc || ''}</p>
         <div class="tag-row">
-          <span class="price mono">${p.price.toFixed(2)}</span>
+          <span class="price mono">${parseFloat(p.price).toFixed(2)}</span>
           <button class="add-btn" onclick="addToCart('${p.id}')">Add to cart</button>
         </div>
       </div>
