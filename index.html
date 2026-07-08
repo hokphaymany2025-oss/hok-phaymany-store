@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hok Phaymany Store &mdash; Product Catalog</title>
+<title>Stall &mdash; Product Catalog</title>
 
-  <!-- Open Graph tags: control how this page previews when shared on Telegram, WhatsApp, Facebook, etc. -->
+<!-- Open Graph tags: control how this page previews when shared on Telegram, WhatsApp, Facebook, etc. -->
 <meta property="og:title" content="Hok Phaymany Store">
 <meta property="og:description" content="Browse our products and order directly through Telegram.">
 <meta property="og:image" content="https://hokphaymany2025-oss.github.io/hok-phaymany-store/hokphaymanystore.jpg">
@@ -13,7 +13,7 @@
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
@@ -218,7 +218,7 @@
 
 <header class="site">
   <div class="brand">
-    <h1 id="shopName">Hok Phaymany Store</h1>
+    <h1 id="shopName">Stall</h1>
     <span>fresh goods, made to order</span>
   </div>
   <button class="cart-btn" onclick="openCart()">
@@ -364,7 +364,8 @@
     renderFilters();
     renderGrid();
   }
-// Each category gets a consistent color, cycling through this palette
+
+  // Each category gets a consistent color, cycling through this palette
   const CATEGORY_PALETTE = ['#C1442D', '#3F5B45', '#C79A46', '#5B4B8A', '#2E6E8E', '#8A4B6B', '#6B7A2E'];
 
   function colorForCategory(cat) {
@@ -373,12 +374,21 @@
     const idx = cats.indexOf(cat);
     return CATEGORY_PALETTE[idx % CATEGORY_PALETTE.length];
   }
+
   function renderFilters() {
     const cats = ['All', ...new Set(PRODUCTS.map(p => p.category))];
     const row = document.getElementById('filterRow');
-    row.innerHTML = cats.map(c =>
-      `<button class="filter-chip ${c === activeFilter ? 'active' : ''}" onclick="setFilter('${c}')">${c}</button>`
-    ).join('');
+    row.innerHTML = cats.map(c => {
+      const color = colorForCategory(c);
+      const isActive = c === activeFilter;
+      let style = '';
+      if (color) {
+        style = isActive
+          ? `background:${color}; border-color:${color}; color:var(--paper);`
+          : `border-color:${color}; color:${color};`;
+      }
+      return `<button class="filter-chip ${isActive && !color ? 'active' : ''}" style="${style}" onclick="setFilter('${c}')">${c}</button>`;
+    }).join('');
   }
 
   function setFilter(cat) { activeFilter = cat; renderFilters(); renderGrid(); }
