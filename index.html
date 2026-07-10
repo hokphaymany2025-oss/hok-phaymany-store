@@ -8,21 +8,25 @@
 <!-- Open Graph tags: control how this page previews when shared on Telegram, WhatsApp, Facebook, etc. -->
 <meta property="og:title" content="Hok Phaymany Store">
 <meta property="og:description" content="Browse our products and order directly through Telegram.">
-<meta property="og:image" content="https://hokphaymany2025-oss.github.io/hok-phaymany-store/hokphaymanystorenew.jpg">
+<meta property="og:image" content="https://hokphaymany2025-oss.github.io/hok-phaymany-store/hokphaymanystore.jpg">
 <meta property="og:url" content="https://hokphaymany2025-oss.github.io/hok-phaymany-store/">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
+
+<!-- KHQR payment libraries: bakong-khqr builds the payment payload, qrcode-generator renders it as a scannable QR image -->
+<script src="https://github.com/davidhuotkeo/bakong-khqr/releases/download/bakong-khqr-1.0.6/khqr-1.0.6.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --ink: #F54927;
+    --ink: #1B1B1E;
     --paper: #F1E9D8;
-    --paper-dim: #F5DF9A;
-    --rust: #C79008;
-    --moss: #77E61C;
+    --paper-dim: #E4D9C0;
+    --rust: #C1442D;
+    --moss: #3F5B45;
     --gold: #C79A46;
     --line: rgba(27,27,30,0.18);
   }
@@ -52,8 +56,8 @@
     z-index: 10;
   }
   header.site .brand { display: flex; flex-direction: column; }
-  header.site .brand h1 { font-size: 14px; letter-spacing: -0.2px; }
-  header.site .brand span { font-size: 9px; color: var(--ink); opacity: 1; font-style: italic; font-family: 'Fraunces', serif; }
+  header.site .brand h1 { font-size: 28px; letter-spacing: -0.5px; text-shadow: 2px 2px 4px rgba(0,0,0,0.25); }
+  header.site .brand span { font-size: 13px; color: var(--ink); opacity: 0.7; font-style: italic; font-family: 'Fraunces', serif; }
 
   .cart-btn {
     display: flex; align-items: center; gap: 8px;
@@ -65,7 +69,7 @@
   .cart-btn:hover { background: var(--rust); }
   .cart-count {
     background: var(--paper); color: var(--ink);
-    border-radius: 100%; width: 20px; height: 30px;
+    border-radius: 50%; width: 20px; height: 20px;
     display: flex; align-items: center; justify-content: center;
     font-size: 11px; font-weight: 600;
   }
@@ -74,16 +78,17 @@
     max-width: 1080px;
     margin: 0 auto;
     padding: 40px 32px 80px;
-    background: linear-gradient(rgba(10, 20, 60, 0.3), rgba(10, 20, 60, 0.3)), url('https://hokphaymany2025-oss.github.io/hok-phaymany-store/hokphaymanystorenew.jpg') center/cover no-repeat fixed;
+    background: linear-gradient(rgba(20, 50, 120, 0.7), rgba(20, 50, 120, 0.7)), url('https://hokphaymany2025-oss.github.io/hok-phaymany-store/hokphaymanystore.jpg') center/cover no-repeat fixed;
   }
-  
+
   .filter-row {
     display: flex; gap: 10px; margin-bottom: 32px; flex-wrap: wrap;
   }
   .filter-chip {
-    border: 2px solid var(--ink); background: #6FA1FE;
-    padding: 6px 16px; border-radius: 999px; font-size: 17px;
+    border: 1.5px solid var(--ink); background: transparent;
+    padding: 6px 16px; border-radius: 999px; font-size: 13px;
     cursor: pointer; font-family: 'Inter'; color: var(--ink);
+    font-weight: 600;
   }
   .filter-chip.active { background: var(--ink); color: var(--paper); }
 
@@ -114,7 +119,7 @@
     color: var(--paper);
   }
   .card .thumb-img {
-    width: 100%; height: 180px; border-radius: 4px;
+    width: 100%; height: 130px; border-radius: 4px;
     object-fit: cover; margin-bottom: 14px; display: block;
     border: 1px solid var(--line);
   }
@@ -198,7 +203,7 @@
   .confirm-box .order-id { font-size: 20px; font-weight: 600; letter-spacing: 1px; margin: 6px 0; }
 
   footer.owner-link {
-    text-align: center; padding: 24px; font-size: 13px; opacity: 1;
+    text-align: center; padding: 24px; font-size: 12px; opacity: 0.55;
   }
   footer.owner-link a { color: var(--ink); }
 
@@ -208,20 +213,20 @@
   .order-card .oh { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px; }
   .order-card ul { margin: 8px 0; padding-left: 18px; font-size: 13px; }
   .status-pill {
-    font-size: 13px; padding: 5px 12px; border-radius: 999px; border: 5px solid var(--moss); color: #F24D11;
+    font-size: 11px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--moss); color: var(--moss);
     background: none; cursor: pointer; font-family: 'Inter';
   }
-  .status-pill.done { background: #F24D11; color: var(--paper); }
+  .status-pill.done { background: var(--moss); color: var(--paper); }
 </style>
 </head>
 <body>
 
 <header class="site">
-  <div class="brand" style="flex-direction: row; align-items: center; gap: 6px;">
-    <img src="https://hokphaymany2025-oss.github.io/hok-phaymany-store/logo.png" alt="Logo" style="height: 50px; width: 50px; object-fit: cover; border-radius: 15px;" onerror="this.style.display='none';">
+  <div class="brand" style="flex-direction: row; align-items: center; gap: 12px;">
+    <img src="https://hokphaymany2025-oss.github.io/hok-phaymany-store/logo.png" alt="Logo" style="height: 44px; width: 44px; object-fit: cover; border-radius: 8px;" onerror="this.style.display='none';">
     <div style="display:flex; flex-direction:column;">
-      <h1 id="shopName">Hok Phaymany Store</h1>
-      <span>High-Quality Products with Exceptional Service, Made Just for You.</span>
+      <h1 id="shopName">Stall</h1>
+      <span>fresh goods, made to order</span>
     </div>
   </div>
   <button class="cart-btn" onclick="openCart()">
@@ -283,7 +288,15 @@
       <div style="font-size:12px; opacity:0.7;">ORDER NUMBER</div>
       <div class="order-id mono" id="confirmOrderId"></div>
     </div>
-    <a id="confirmTgLink" href="#" target="_blank" rel="noopener" style="display:block; text-align:center; margin-top:16px; background:var(--ink); color:var(--paper); padding:12px; border-radius:4px; text-decoration:none; font-weight:500;">Send order number on Telegram</a>
+
+    <div id="khqrSection" style="margin-top:20px; text-align:center;">
+      <div style="font-size:13px; font-weight:600; margin-bottom:10px;">Pay via KHQR</div>
+      <div id="khqrCode" style="display:flex; justify-content:center; margin-bottom:10px;"></div>
+      <div id="khqrAmount" class="mono" style="font-size:16px; font-weight:600;"></div>
+      <div style="font-size:12px; opacity:0.65; margin-top:6px;">Scan with your banking app (Bakong, ABA, Wing, ACLEDA, etc.)</div>
+    </div>
+
+    <a id="confirmTgLink" href="#" target="_blank" rel="noopener" style="display:block; text-align:center; margin-top:16px; background:var(--ink); color:var(--paper); padding:12px; border-radius:4px; text-decoration:none; font-weight:500;">I've paid — notify seller on Telegram</a>
   </div>
 </div>
 
@@ -369,7 +382,7 @@
   }
 
   // Each category gets a consistent color, cycling through this palette
-  const CATEGORY_PALETTE = ['#34E5FF', '#34E5FF', '#34E5FF', '#5B4B8A', '#2E6E8E', '#8A4B6B', '#6B7A2E'];
+  const CATEGORY_PALETTE = ['#C1442D', '#3F5B45', '#C79A46', '#5B4B8A', '#2E6E8E', '#8A4B6B', '#6B7A2E'];
 
   function colorForCategory(cat) {
     if (cat === 'All') return null; // 'All' keeps the default ink/paper styling
@@ -445,11 +458,11 @@
       el.innerHTML = entries.map(([id, qty]) => {
         const p = PRODUCTS.find(x => x.id === id);
         if (!p) return '';
-        const thumbStyle = 'width:44px;height:80px;border-radius:4px;flex-shrink:0;';
+        const thumbStyle = 'width:60px;height:60px;border-radius:4px;flex-shrink:0;';
         const thumb = p.image
           ? `<img src="${p.image}" alt="" style="${thumbStyle} object-fit:cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-             <div style="${thumbStyle} background:${p.color || '#1B1B1E'}; display:none; align-items:center; justify-content:center; font-size:20px;">${p.icon || ''}</div>`
-          : `<div style="${thumbStyle} background:${p.color || '#1B1B1E'}; display:flex; align-items:center; justify-content:center; font-size:20px;">${p.icon || ''}</div>`;
+             <div style="${thumbStyle} background:${p.color || '#1B1B1E'}; display:none; align-items:center; justify-content:center; font-size:26px;">${p.icon || ''}</div>`
+          : `<div style="${thumbStyle} background:${p.color || '#1B1B1E'}; display:flex; align-items:center; justify-content:center; font-size:26px;">${p.icon || ''}</div>`;
         return `
           <div class="cart-line">
             <div style="display:flex; align-items:center; gap:10px;">
@@ -475,12 +488,22 @@
   function openCheckout() {
     if (cartItemCount() === 0) return;
     closeOverlay('cartOverlay');
+    const submitBtn = document.querySelector('#checkoutForm button[type="submit"]');
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Place order'; }
     document.getElementById('checkoutOverlay').classList.add('open');
   }
   function closeOverlay(id) { document.getElementById(id).classList.remove('open'); }
 
   function submitOrder(e) {
     e.preventDefault();
+
+    // Prevent duplicate orders from a double-click / double-tap on "Place order"
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    if (submitBtn) {
+      if (submitBtn.disabled) return; // already submitting, ignore extra clicks
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Placing order...';
+    }
 
     // Drop any cart entries pointing at products that no longer exist
     // (e.g. leftover from before a product list refresh)
@@ -530,6 +553,7 @@
     document.getElementById('checkoutForm').reset();
     closeOverlay('checkoutOverlay');
     document.getElementById('confirmOrderId').textContent = orderId;
+    generateKHQRForOrder(orderId, orderTotal);
     const itemsSummary = items.map(i => `${i.qty}x ${i.name}`).join(', ');
     const prefilled = `Order ${orderId}: ${itemsSummary} - Total $${orderTotal.toFixed(2)}`;
     document.getElementById('confirmTgLink').href =
@@ -539,7 +563,48 @@
 
   let lastRenderedOrders = [];
 
-  let ownerPasscode = null;
+  // ---------------------------------------------------------------------
+  // KHQR PAYMENT CONFIG — replace these 3 values with your real details
+  // Find your Bakong Account ID in your banking app under "KHQR" / "Receive Money"
+  // ---------------------------------------------------------------------
+  const KHQR_BAKONG_ACCOUNT_ID = 'yourname@bank'; // e.g. 'hokphaymany@wing'
+  const KHQR_MERCHANT_NAME = 'Your Name';         // shown to the customer when they scan
+  const KHQR_MERCHANT_CITY = 'Phnom Penh';
+
+  function generateKHQRForOrder(orderId, amountUSD) {
+    const container = document.getElementById('khqrCode');
+    const amountEl = document.getElementById('khqrAmount');
+    container.innerHTML = '';
+    amountEl.textContent = '';
+
+    if (KHQR_BAKONG_ACCOUNT_ID === 'yourname@bank') {
+      container.innerHTML = '<div style="font-size:12px; color:var(--rust);">KHQR not set up yet — shop owner needs to add their Bakong account ID.</div>';
+      return;
+    }
+
+    try {
+      const { BakongKHQR, khqrData, IndividualInfo } = window;
+      const individualInfo = new IndividualInfo(
+        KHQR_BAKONG_ACCOUNT_ID,
+        khqrData.currency.usd,
+        KHQR_MERCHANT_NAME,
+        KHQR_MERCHANT_CITY,
+        { billNumber: orderId, amount: amountUSD, expirationTimestamp: Date.now() + (15 * 60 * 1000) }
+      );
+      const khqr = new BakongKHQR();
+      const response = khqr.generateIndividual(individualInfo);
+
+      if (response && response.data && response.data.qr) {
+        new QRCode(container, { text: response.data.qr, width: 200, height: 200 });
+        amountEl.textContent = `$${amountUSD.toFixed(2)} USD`;
+      } else {
+        throw new Error('No QR string returned');
+      }
+    } catch (err) {
+      console.error('KHQR generation failed:', err);
+      container.innerHTML = '<div style="font-size:12px; color:var(--rust);">Could not generate payment QR. Please contact the seller directly.</div>';
+    }
+  }
 
   async function openOwnerView() {
     const passcode = prompt('Enter shop owner passcode:');
@@ -629,13 +694,21 @@
     if (localOrder) { localOrder.status = newStatus; saveOrders(localOrders); }
 
     try {
-      await fetch(ORDERS_API_URL, {
+      const res = await fetch(ORDERS_API_URL, {
         method: 'POST',
         body: JSON.stringify({ action: 'update_status', id, status: newStatus, key: ownerPasscode }),
         headers: { 'Content-Type': 'text/plain;charset=utf-8' }
       });
+      const data = await res.json();
+      if (data && data.error === 'unauthorized') {
+        alert('Incorrect or expired passcode — this order was not updated. Please click "View orders" again and re-enter your passcode.');
+        ownerPasscode = null;
+        return;
+      }
     } catch (err) {
       console.error('Could not sync status to sheet:', err);
+      alert('Could not reach the order sheet. The status may not have saved — please check your connection and try again.');
+      return;
     }
 
     openOwnerView2();
